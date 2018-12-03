@@ -7,9 +7,18 @@
 //
 
 #include <iostream>
+using namespace std;
 
-int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+
+class hex
+{
+private:
+    
+public:
+    
+};
+
+int main(int argc, const char * argv[])
+{
     return 0;
 }

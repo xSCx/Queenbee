@@ -1,5 +1,5 @@
 # Queenbee
-Hex AI
+Hex AI ： inspired by "Are bees better than fruitflies?"
 
 using 
     two-distance
