@@ -9,7 +9,6 @@
 #include <iostream>
 #include <cmath>
 using namespace std;
-int signal_one = 0;
 
 struct Hex
 {
@@ -71,7 +70,10 @@ void first(int color, int size, Hex **a)
             if(a[i][0].color == color)
             {
                 a[i][1].td= 1;
-                a[i+1][0].td =1;
+                if(i<size)
+                {
+                    a[i+1][0].td =1;
+                }
                 if(i-1>-1)
                 {
                     a[i-1][0].td =1;
@@ -95,7 +97,10 @@ void first(int color, int size, Hex **a)
                                     {
                                         mn[0] = x;
                                         a[x][n+2].td= 1;
-                                        a[x+1][n+1].td =1;
+                                        if(x+1<size)
+                                        {
+                                            a[x+1][n+1].td =1;
+                                        }
                                         if(x-1>-1)
                                         {
                                             a[x-1][n+1].td =1;
@@ -105,8 +110,16 @@ void first(int color, int size, Hex **a)
                                     else
                                     {
                                         mn[time-1] = x;
-                                        a[x][n+2].td= 1;
-                                        a[x+1][n+1].td =1;
+                                        if(x+1<size)
+                                        {
+                                            a[x+1][n+1].td =1;
+                                        }
+                                        if(n+2<size)
+                                        {
+                                            a[x][n+2].td= 1;
+                                        }
+                                        //a[x][n+2].td= 1;
+                                        //a[x+1][n+1].td =1;
                                     }
                                 }
                             }
@@ -124,22 +137,33 @@ void first(int color, int size, Hex **a)
 }
 
 //遍历邻居棋子
-void LookAround(int size, Hex a[size][size])
+void LookAround(int color, int size, Hex **a)
 {
-    //申请动态数组
-    bool **signal = new bool*[size];
-    for(int i = 0; i < size; i++)
-    {
-        signal[i] = new bool [size];
-    }
     //遍历邻居
-    
-    //删除动态数组
-    for(int i=0; i<size;i++)
+    for(int i=0; i<size; i++)
     {
-        delete []signal[size];
+        for(int j=1;j<size;j++)
+        {
+            //申请动态数组
+            bool **signal = new bool*[size];
+            for(int i = 0; i < size; i++)
+            {
+                signal[i] = new bool [size];
+            }
+            //
+            if(a[i][j].color==2)
+            {
+                
+            }
+            
+            //删除动态数组
+            for(int i=0; i<size;i++)
+            {
+                delete []signal[size];
+            }
+            delete []signal;
+        }
     }
-    delete []signal;
 }
 
 //计算每一条边的双距离之前的坐标转换
@@ -203,9 +227,10 @@ int main()
     }
     
     int Max[2];
-    Max[0]=0;
-    Max[1]=0;
+    Max[0]=-1;
+    Max[1]=-1;
     
+    //test
     origin[2][1].color =1;
     origin[2][0].color =1;
     origin[1][2].color =1;
