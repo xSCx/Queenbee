@@ -121,8 +121,6 @@ void first(int color, int size, Hex **a)
                                         {
                                             a[x][n+2].td= 1;
                                         }
-                                        //a[x][n+2].td= 1;
-                                        //a[x+1][n+1].td =1;
                                     }
                                 }
                             }
@@ -140,42 +138,42 @@ void first(int color, int size, Hex **a)
 }
 
 //遍历一个格子邻接的所有格子
-void LookAround(int value, int Min, int sMin, int size, int color, bool **signal,Hex **a,int i, int j)
+int LookAround(int value, int Min, int sMin, int size, int color, bool **signal,Hex **a,int i, int j)
 {
     
-    for(int y=j-1; y<j+1; y++)
+    for(int n=j-1; n<j+1; n++)
     {
-        for(int x=0;x<size;x++)
+        for(int m=0;m<size;m++)
         {
-            if(neighbour(i, j, x, y, size))
+            if(neighbour(i, j, m, n, size))
             {
-                if(a[x][y].color==2)
+                if(a[m][n].color==2)
                 {
-                    if(signal[x][y]==false)
+                    if(signal[m][n]==false)
                     {
-                        signal[x][y]=true;
-                        if(a[x][y].td != -1)
+                        signal[m][n]=true;
+                        if(a[m][n].td != -1)
                         {
                             if(Min == -1)
                             {
-                                Min = a[x][y].td;
+                                Min = a[m][n].td;
                             }
                             else
-                                if(a[x][y].td<Min)
+                                if(a[m][n].td<Min)
                                 {
                                     sMin = Min;
-                                    Min = a[x][y].td;
+                                    Min = a[m][n].td;
                                 }
                                 else
-                                    if(a[x][y].td==Min)
+                                    if(a[m][n].td==Min)
                                     {
                                         sMin = Min;
                                     }
                                     else
                                     {
-                                        if(sMin==-1||sMin>a[x][y].td)
+                                        if(sMin==-1||sMin>a[m][n].td)
                                         {
-                                            sMin = a[x][y].td;
+                                            sMin = a[m][n].td;
                                         }
                                     }
                         }
@@ -184,9 +182,9 @@ void LookAround(int value, int Min, int sMin, int size, int color, bool **signal
             }
             else
             {
-                if(a[x][y].color==color)
+                if(a[m][n].color==color)
                 {
-                    LookAround(value, Min, sMin, size, color, signal, a, x, y);
+                    LookAround(value, Min, sMin, size, color, signal, a, m, n);
                 }
             }
         }
@@ -201,6 +199,7 @@ void LookAround(int value, int Min, int sMin, int size, int color, bool **signal
     {
         value = sMin + 1;
     }
+    return value;
 }
 
 //计算当前双距离
@@ -223,7 +222,7 @@ void Value(int color, int size, Hex **a)
             
             if(a[i][j].color==2)
             {
-                LookAround(value, Min, sMin, size, color, signal, a, i, j);
+                value=LookAround(value, Min, sMin, size, color, signal, a, i, j);
                 a[i][j].td=value;
             }
             
