@@ -20,17 +20,19 @@ struct Hex
     bool count = 0;
 };
 
-//计算双距离
-int TwoDistance()
-{
-    
-    return 0;
-}
 
 //判断相邻,1相邻，2不相邻
-bool neighbour(int a, int b, int c, int d)
+bool neighbour(int a, int b, int c, int d,int size)
 {
     bool neighbour =0;
+    if(b==0&&d==0)
+    {
+        neighbour=1;
+    }
+    if(b==size-1&&d==size-1)
+    {
+        neighbour=1;
+    }
     if(a-c==-1)
     {
         if((b-d==-1)||(b-d==0))
@@ -88,7 +90,7 @@ void first(int color, int size, Hex **a)
                     {
                         for(int x=0; x < i+1; x++)
                         {
-                            if(neighbour(mn[s], n, x, n+1))
+                            if(neighbour(mn[s], n, x, n+1,size))
                             {
                                 if(a[x][n+1].color == color)
                                 {
@@ -136,8 +138,28 @@ void first(int color, int size, Hex **a)
     }
 }
 
-//遍历邻居棋子
-void LookAround(int color, int size, Hex **a)
+//遍历一个格子周围的六个格子
+int LookAround(int size, bool **signal,Hex **a,int i, int j)
+{
+    int value;
+    int Max = -1;
+    int SMax = -1;
+    
+    if((i-1>-1))
+    {
+        
+    }
+    
+    //返回
+    if(SMax == -1)
+    {
+        value=Max;
+    }
+    return value;
+}
+
+//计算当前双距离
+void Value(int color, int size, Hex **a)
 {
     //遍历邻居
     for(int i=0; i<size; i++)
@@ -153,7 +175,7 @@ void LookAround(int color, int size, Hex **a)
             //
             if(a[i][j].color==2)
             {
-                
+                a[i][j].td=LookAround(size, signal, a, i, j);
             }
             
             //删除动态数组
@@ -166,9 +188,16 @@ void LookAround(int color, int size, Hex **a)
     }
 }
 
+//计算双距离
+int TwoDistance()
+{
+    
+    return 0;
+}
+
 //计算每一条边的双距离之前的坐标转换
 //0:red,1:blue;
-void ChangePosition(int a, int b, int size, Hex h[size][size], Hex temp[size][size])
+void ChangePosition(int a, int b, int size, Hex **h, Hex **temp)
 {
     if(a == 0)
     {
@@ -211,9 +240,7 @@ void ChangePosition(int a, int b, int size, Hex h[size][size], Hex temp[size][si
 //读取棋子
 void readhex()
 {
-    int a[2];
-    a[0]=1;
-    a[1]=2;
+    
 }
 
 int main()
@@ -226,10 +253,6 @@ int main()
         origin[i] = new Hex[board_size];
     }
     
-    int Max[2];
-    Max[0]=-1;
-    Max[1]=-1;
-    
     //test
     origin[2][1].color =1;
     origin[2][0].color =1;
@@ -240,7 +263,7 @@ int main()
     {
         for(int j=0;j<board_size;j++)
         {
-            if(origin[i][j].td == 1)
+            if(origin[i][j].color == 2)
             {
                 cout<<"("<<i<<","<<j<<")"<<endl;
             }
