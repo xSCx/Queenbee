@@ -140,11 +140,8 @@ void first(int color, int size, Hex **a)
 }
 
 //遍历一个格子邻接的所有格子
-int LookAround(int size, int color, bool **signal,Hex **a,int i, int j)
+void LookAround(int value, int Min, int sMin, int size, int color, bool **signal,Hex **a,int i, int j)
 {
-    int value;
-    int Min = -1;
-    int sMin = -1;
     
     for(int y=j-1; y<j+1; y++)
     {
@@ -189,7 +186,7 @@ int LookAround(int size, int color, bool **signal,Hex **a,int i, int j)
             {
                 if(a[x][y].color==color)
                 {
-                    LookAround(size, color, signal, a, x, y);
+                    LookAround(value, Min, sMin, size, color, signal, a, x, y);
                 }
             }
         }
@@ -202,10 +199,8 @@ int LookAround(int size, int color, bool **signal,Hex **a,int i, int j)
     }
     else
     {
-        value = sMin;
+        value = sMin + 1;
     }
-    value +=1;
-    return value;
 }
 
 //计算当前双距离
@@ -216,6 +211,9 @@ void Value(int color, int size, Hex **a)
     {
         for(int i=0;i<size;i++)
         {
+            int value = -1;
+            int Min = -1;
+            int sMin = -1;
             //申请动态数组
             bool **signal = new bool*[size];
             for(int i = 0; i < size; i++)
@@ -225,7 +223,8 @@ void Value(int color, int size, Hex **a)
             
             if(a[i][j].color==2)
             {
-                a[i][j].td=LookAround(size, color, signal, a, i, j);
+                LookAround(value, Min, sMin, size, color, signal, a, i, j);
+                a[i][j].td=value;
             }
             
             //删除动态数组
