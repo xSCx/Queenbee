@@ -13,7 +13,7 @@ using namespace std;
 struct Hex
 {
     int  color =2;
-    int  td = 0;
+    int  td = -1;
     //int  td_r1 = 1;
     //int  td_b0 = 1;
     //int  td_b1 = 1;
@@ -35,7 +35,7 @@ bool neighbour(int a, int b, int c, int d,int size)
     }
     if(a-c==-1)
     {
-        if((b-d==-1)||(b-d==0))
+        if((b-d==0)||(b-d==1))
         {
             neighbour =1;
         }
@@ -56,6 +56,7 @@ bool neighbour(int a, int b, int c, int d,int size)
     }
     return neighbour;
 }
+
 //赋值1
 void first(int color, int size, Hex **a)
 {
@@ -138,23 +139,72 @@ void first(int color, int size, Hex **a)
     }
 }
 
-//遍历一个格子周围的六个格子
-int LookAround(int size, bool **signal,Hex **a,int i, int j)
+//遍历一个格子邻接的所有格子
+int LookAround(int size, int color, bool **signal,Hex **a,int i, int j)
 {
     int value;
-    int Max = -1;
-    int SMax = -1;
+    int Min = -1;
+    int sMin = -1;
     
-    if((i-1>-1))
+    for(int y=j-1; y<j+1; y++)
     {
-        
+        for(int x=0;x<size;x++)
+        {
+            if(neighbour(i, j, x, y, size))
+            {
+                if(a[x][y].color==2)
+                {
+                    if(signal[x][y]==false)
+                    {
+                        signal[x][y]=true;
+                        if(a[x][y].td != -1)
+                        {
+                            if(Min == -1)
+                            {
+                                Min = a[x][y].td;
+                            }
+                            else
+                                if(a[x][y].td<Min)
+                                {
+                                    sMin = Min;
+                                    Min = a[x][y].td;
+                                }
+                                else
+                                    if(a[x][y].td==Min)
+                                    {
+                                        sMin = Min;
+                                    }
+                                    else
+                                    {
+                                        if(sMin==-1||sMin>a[x][y].td)
+                                        {
+                                            sMin = a[x][y].td;
+                                        }
+                                    }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if(a[x][y].color==color)
+                {
+                    LookAround(size, color, signal, a, x, y);
+                }
+            }
+        }
     }
     
     //返回
-    if(SMax == -1)
+    if(sMin == -1)
     {
-        value=Max;
+        value=-1;
     }
+    else
+    {
+        value = sMin;
+    }
+    value +=1;
     return value;
 }
 
@@ -162,9 +212,9 @@ int LookAround(int size, bool **signal,Hex **a,int i, int j)
 void Value(int color, int size, Hex **a)
 {
     //遍历邻居
-    for(int i=0; i<size; i++)
+    for(int j=1;j<size; j++)
     {
-        for(int j=1;j<size;j++)
+        for(int i=0;i<size;i++)
         {
             //申请动态数组
             bool **signal = new bool*[size];
@@ -172,18 +222,18 @@ void Value(int color, int size, Hex **a)
             {
                 signal[i] = new bool [size];
             }
-            //
+            
             if(a[i][j].color==2)
             {
-                a[i][j].td=LookAround(size, signal, a, i, j);
+                a[i][j].td=LookAround(size, color, signal, a, i, j);
             }
             
             //删除动态数组
             for(int i=0; i<size;i++)
             {
-                delete []signal[size];
+                delete[] signal[i];
             }
-            delete []signal;
+            delete[] signal;
         }
     }
 }
@@ -252,22 +302,20 @@ int main()
     {
         origin[i] = new Hex[board_size];
     }
-    
-    //test
-    origin[2][1].color =1;
-    origin[2][0].color =1;
-    origin[1][2].color =1;
+    origin[1][2].color = 1;
     first(1, board_size, origin);
+    Value(1, board_size, origin);
     
     for(int i=0;i<board_size;i++)
     {
         for(int j=0;j<board_size;j++)
         {
-            if(origin[i][j].color == 2)
+            if(origin[j][i].color == 2)
             {
-                cout<<"("<<i<<","<<j<<")"<<endl;
+                cout<<"("<<j<<","<<i<<")"<<origin[j][i].td<<endl;
             }
         }
     }
+    
     return 0;
 }
