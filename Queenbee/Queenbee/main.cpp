@@ -140,7 +140,6 @@ void first(int color, int size, Hex **a)
 //遍历一个格子邻接的所有格子
 int LookAround(int value, int Min, int sMin, int size, int color, bool **signal,Hex **a,int i, int j)
 {
-    
     for(int n=j-1; n<j+1; n++)
     {
         for(int m=0;m<size;m++)
@@ -181,12 +180,13 @@ int LookAround(int value, int Min, int sMin, int size, int color, bool **signal,
                 }
             }
             else
-            {
-                if(a[m][n].color==color)
-                {
-                    LookAround(value, Min, sMin, size, color, signal, a, m, n);
-                }
-            }
+                if((m!=i)&&(n!=j))
+                   {
+                       if(a[m][n].color==color)
+                       {
+                           LookAround(value, Min, sMin, size, color, signal, a, m, n);
+                       }
+                   }
         }
     }
     
