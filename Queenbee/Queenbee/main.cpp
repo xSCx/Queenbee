@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 using namespace std;
 
 struct Hex
@@ -138,7 +139,7 @@ void first(int color, int size, Hex **a)
 }
 
 //遍历一个格子邻接的所有格子
-int LookAround(int value, int Min, int sMin, int size, int color, bool **signal,Hex **a,int i, int j)
+vector<int> LookAround(int value, vector<int> mmin, int size, int color, bool **signal,Hex **a,int i, int j)
 {
     for(int n=j-1; n<j+1; n++)
     {
@@ -153,53 +154,43 @@ int LookAround(int value, int Min, int sMin, int size, int color, bool **signal,
                         signal[m][n]=true;
                         if(a[m][n].td != -1)
                         {
-                            if(Min == -1)
+                            if(mmin[0] == -1)
                             {
-                                Min = a[m][n].td;
+                                mmin[0] = a[m][n].td;
                             }
                             else
-                                if(a[m][n].td<Min)
+                                if(a[m][n].td<mmin[0])
                                 {
-                                    sMin = Min;
-                                    Min = a[m][n].td;
+                                    mmin[1] = mmin[0];
+                                    mmin[0] = a[m][n].td;
                                 }
                                 else
-                                    if(a[m][n].td==Min)
+                                    if(a[m][n].td==mmin[0])
                                     {
-                                        sMin = Min;
+                                        mmin[1] = mmin[0];
                                     }
                                     else
                                     {
-                                        if(sMin==-1||sMin>a[m][n].td)
+                                        if(mmin[1]==-1||mmin[1]>a[m][n].td)
                                         {
-                                            sMin = a[m][n].td;
+                                            mmin[1] = a[m][n].td;
                                         }
                                     }
                         }
                     }
                 }
+                else
+                    if((m!=i)||(n!=j))
+                    {
+                        if(a[m][n].color==color)
+                        {
+                            mmin = LookAround(value, mmin, size, color, signal, a, m, n);
+                        }
+                    }
             }
-            else
-                if((m!=i)&&(n!=j))
-                   {
-                       if(a[m][n].color==color)
-                       {
-                           LookAround(value, Min, sMin, size, color, signal, a, m, n);
-                       }
-                   }
         }
     }
-    
-    //返回
-    if(sMin == -1)
-    {
-        value=-1;
-    }
-    else
-    {
-        value = sMin + 1;
-    }
-    return value;
+    return mmin;
 }
 
 //计算当前双距离
@@ -211,8 +202,7 @@ void Value(int color, int size, Hex **a)
         for(int i=0;i<size;i++)
         {
             int value = -1;
-            int Min = -1;
-            int sMin = -1;
+            vector<int> Miin(2,-1);
             //申请动态数组
             bool **signal = new bool*[size];
             for(int i = 0; i < size; i++)
@@ -222,8 +212,14 @@ void Value(int color, int size, Hex **a)
             
             if(a[i][j].color==2)
             {
-                value=LookAround(value, Min, sMin, size, color, signal, a, i, j);
-                a[i][j].td=value;
+                Miin = LookAround(value, Miin, size, color, signal, a, i, j);
+                if(Miin[1]==-1)
+                {
+                    a[i][j].td=Miin[1];
+                }
+                else
+                    a[i][j].td=Miin[1]+1;
+                
             }
             
             //删除动态数组
@@ -244,10 +240,10 @@ int TwoDistance()
 }
 
 //计算每一条边的双距离之前的坐标转换
-//0:red,1:blue;
-void ChangePosition(int a, int b, int size, Hex **h, Hex **temp)
+//0:blue,1:red;
+void ChangePosition(int color, int b, int size, Hex **h, Hex **temp)
 {
-    if(a == 0)
+    if(color == 1)
     {
         if(b == 1)
         {
