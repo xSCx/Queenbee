@@ -9,16 +9,15 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <string>
 using namespace std;
 
 struct Hex
 {
     int  color =2;
     int  td = -1;
-    //int  td_r1 = 1;
-    //int  td_b0 = 1;
-    //int  td_b1 = 1;
-    bool count = 0;
+    int  td_r = -1;
+    int  td_b = -1;
 };
 
 
@@ -193,7 +192,7 @@ vector<int> LookAround(int value, vector<int> mmin, int size, int color, bool **
     return mmin;
 }
 
-//计算当前双距离
+//计算当前格子双距离
 void Value(int color, int size, Hex **a)
 {
     //遍历邻居
@@ -215,10 +214,10 @@ void Value(int color, int size, Hex **a)
                 Miin = LookAround(value, Miin, size, color, signal, a, i, j);
                 if(Miin[1]==-1)
                 {
-                    a[i][j].td=Miin[1];
+                    a[i][j].td = -1;
                 }
                 else
-                    a[i][j].td=Miin[1]+1;
+                    a[i][j].td = Miin[1]+1;
                 
             }
             
@@ -232,84 +231,183 @@ void Value(int color, int size, Hex **a)
     }
 }
 
-//计算双距离
-int TwoDistance()
-{
-    
-    return 0;
-}
-
 //计算每一条边的双距离之前的坐标转换
 //0:blue,1:red;
-void ChangePosition(int color, int b, int size, Hex **h, Hex **temp)
+void ChangePosition(int size, Hex **h)
 {
-    if(color == 1)
+    //int color = 1;
+    //红边初边
+    //创建临时数组转换坐标
+    Hex **temp = new Hex*[size];
+    for(int i=0;i<size;i++)
     {
-        if(b == 1)
+        temp[i] = new Hex[size];
+    }
+    first(1, size, h);
+    Value(1, size, h);
+    //红边对边
+    for(int i=0;i<size;i++)
+    {
+        for(int j=0;j<size;j++)
         {
-            for(int i=0;i<size;i++)
-            {
-                for(int j=0;j<size;j++)
-                {
-                    temp[size-1-i][size-1-j] = h[i][j];
-                }
-            }
+            h[i][j].td_r = h[i][j].td;
+            temp[size-1-i][size-1-j].color = h[i][j].color;
         }
     }
-    else
+    first(1, size, temp);
+    Value(1, size, temp);
+    for(int i=0;i<size;i++)
     {
-        if(b == 0)
+        for(int j=0;j<size;j++)
         {
-            for(int i=0;i<size;i++)
-            {
-                for(int j=0;j<size;j++)
-                {
-                    temp[j][i] = h[i][j];
-                }
-            }
-        }
-        else
-        {
-            for(int i=0;i<size;i++)
-            {
-                for(int j=0;j<size;j++)
-                {
-                    temp[size-1-j][size-1-i] = h[i][j];
-                }
-            }
+            h[i][j].td_r += temp[size-i-1][size-1-j].td;
         }
     }
+    //删除临时数组
+    for(int i=0; i<size;i++)
+    {
+        delete[] temp[i];
+    }
+    delete[] temp;
+    
+    //蓝边初边
+    //创建临时数组转换坐标
+    Hex **tempb = new Hex*[size];
+    for(int i=0;i<size;i++)
+    {
+        tempb[i] = new Hex[size];
+    }
+    for(int i=0;i<size;i++)
+    {
+        for(int j=0;j<size;j++)
+        {
+            tempb[j][i].color = h[i][j].color;
+        }
+    }
+    first(0, size, tempb);
+    Value(0, size, tempb);
+    
+    //蓝边对边
+    Hex **tempbb = new Hex*[size];
+    for(int i=0;i<size;i++)
+    {
+        tempbb[i] = new Hex[size];
+    }
+    //
+    for(int i=0;i<size;i++)
+    {
+        for(int j=0;j<size;j++)
+        {
+            h[i][j].td_b = tempb[j][i].td;
+            tempbb[size-1-j][size-1-i].color = h[i][j].color;
+        }
+    }
+    first(0, size, tempbb);
+    Value(0, size, tempbb);
+    //删除tempb临时数组
+    for(int i=0; i<size;i++)
+    {
+        delete[] tempb[i];
+        for(int j=0;j<size;j++)
+        {
+            h[i][j].td_b += tempbb[size-1-j][size-1-i].td;
+        }
+    }
+    delete[] tempb;
+    //删除临时数组
+    for(int i=0; i<size;i++)
+    {
+        delete[] tempbb[i];
+    }
+    delete[] tempbb;
 }
 
-//读取棋子
-void readhex()
-{
-    
-}
 
 int main()
 {
+    string read;
+    int thex;
+    int they;
     int board_size;
-    board_size = 5;//读取棋盘大小
-    Hex **origin = new Hex*[board_size];
+    //读取棋盘大小
+    board_size=5;
+    //创建数组存取当前棋盘下的棋子并初始化color为2
+    int **occupy = new int*[board_size];
     for(int i=0;i<board_size;i++)
     {
-        origin[i] = new Hex[board_size];
+        occupy[i] = new int[board_size];
     }
-    origin[1][2].color = 1;
-    first(1, board_size, origin);
-    Value(1, board_size, origin);
-    
     for(int i=0;i<board_size;i++)
     {
-        for(int j=0;j<board_size;j++)
+        for(int j=0; j<board_size;j++)
         {
-            if(origin[j][i].color == 2)
-            {
-                cout<<"("<<j<<","<<i<<")"<<origin[j][i].td<<endl;
-            }
+            occupy[i][j] = 2;
         }
     }
     
+    while(true)
+    {
+        //读取先手后手
+        //？？？
+        //读取棋子
+        cin>>read;
+        thex = (int)read[0]-65;
+        if((int)read[2]!=0)
+        {
+            they = ((int)read[1]-48)*10+(int)read[2]-49;
+        }
+        else
+        {
+            they = (int)read[1]-49;
+        }
+        occupy[thex][they]=0;
+        
+        //创建当前棋盘状态
+        Hex **origin = new Hex*[board_size];
+        for(int i=0;i<board_size;i++)
+        {
+            origin[i] = new Hex[board_size];
+        }
+        //填入棋子
+        for(int i=0;i<board_size;i++)
+        {
+            for(int j=0;j<board_size;j++)
+            {
+                origin[i][j].color = occupy[i][j];
+            }
+        }
+        
+        int *potential = new int[3];
+        potential[0] = 99;
+        //test
+        ChangePosition(board_size, origin);
+        for(int i=0;i<board_size;i++)
+        {
+            for(int j=0;j<board_size;j++)
+            {
+                if(origin[i][j].color == 2)
+                {
+                    if(potential[0]>origin[i][j].td_b+origin[i][j].td_r)
+                    {
+                        potential[0]=origin[i][j].td_b+origin[i][j].td_r;
+                        potential[1]=i;
+                        potential[2]=j;
+                    }
+                }
+            }
+        }
+        //输出字符串
+        cout<<(char)(potential[1]+65)<<","<<potential[2];
+        thex = potential[1];
+        they = potential[2];
+        occupy[thex][they] = 1;
+        delete[] potential;
+        //删除当前棋盘状态
+        for(int i=0; i<board_size;i++)
+        {
+            delete[] origin[i];
+        }
+        delete[] origin;
+    }
     return 0;
 }
