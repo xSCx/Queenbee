@@ -21,7 +21,7 @@ struct Hex
 };
 
 
-//判断相邻,1相邻，2不相邻
+//判断相邻,true相邻，false不相邻
 bool neighbour(int a, int b, int c, int d,int size)
 {
     bool neighbour =0;
