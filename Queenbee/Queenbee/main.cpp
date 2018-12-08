@@ -12,13 +12,31 @@
 #include <string>
 using namespace std;
 
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cstring>
+using namespace std;
+
 struct Hex
 {
+    //红色1，蓝色0
     int  color =2;
-    int  td = -1;
-    int  td_r = -1;
-    int  td_b = -1;
+    int  td_r1 = 999;
+    int  td_r2 = 999;
+    int  td_b1 = 999;
+    int  td_b2 = 999;
 };
+
+struct Dist
+{
+    int weight = 999;
+    //int sweight = 999;
+    bool wait = 1;
+};
+
 
 
 //判断相邻,true相邻，false不相邻
@@ -57,357 +75,395 @@ bool neighbour(int a, int b, int c, int d,int size)
     return neighbour;
 }
 
-//赋值1
-void first(int color, int size, Hex **a)
+//计算两个格子间的距离
+int weight(int color, int i, int j, int x, int y, int size, Hex **a)
 {
-    int Continue = 0;
-    for(int i=0; i<size; i++)
+    int weight = 999;
+    if(neighbour(i,j,x,y,size))
     {
-        int n= 0;
-        int mn[25];
-        if(a[i][0].color == 2)
+        if(a[x][y].color==2)
         {
-            a[i][0].td =1;
+            weight = 1;
         }
         else
-            if(a[i][0].color == color)
+            if(a[x][y].color == color)
             {
-                a[i][1].td= 1;
-                if(i<size)
+                weight=0;
+            }
+            else
+            {
+                weight=999;
+            }
+        
+    }
+    return weight;
+}
+
+//验证待查集是否为空
+bool empty(Dist **d, int size)
+{
+    bool empty = true;
+    for(int i=0;i<size;i++)
+    {
+        for(int j=0;j<size;j++)
+        {
+            if(d[i][j].wait==1)
+            {
+                empty = false;
+            }
+        }
+        
+    }
+    return empty;
+}
+
+
+
+//搜索到当前选定边的最短路径
+int Dijkstra(int side, int color, int i, int j, int size, Hex **a)
+{
+    int value = 999;
+    int svalue = 999;
+    int min = 1000;
+    int minx=0;
+    int miny=0;
+    Dist **dist = new Dist*[size];
+    for(int m=0;m<size;m++)
+    {
+        dist[m] = new Dist[size];
+    }
+    dist[i][j].weight=0;
+    //dist[i][j].sweight=1;
+    
+    while(!empty(dist, size))
+    {
+        //取出待查集中sweight最小的点
+        for(int x=0;x<size;x++)
+        {
+            for(int y=0;y<size;y++)
+            {
+                if(dist[x][y].wait==true)
                 {
-                    a[i+1][0].td =1;
-                }
-                if(i-1>-1)
-                {
-                    a[i-1][0].td =1;
-                    a[i-1][1].td =1;
-                }
-                mn[0] = i;
-                //从第一列有棋子的点往深
-                while(true)
-                {
-                    int time = 0;
-                    for(int s = 0; s < Continue + 1; s++)
+                    if(dist[x][y].weight<min)
                     {
-                        for(int x=0; x < i+1; x++)
-                        {
-                            if(neighbour(mn[s], n, x, n+1,size))
-                            {
-                                if(a[x][n+1].color == color)
-                                {
-                                    time += 1;
-                                    if(time ==1)
-                                    {
-                                        mn[0] = x;
-                                        a[x][n+2].td= 1;
-                                        if(x+1<size)
-                                        {
-                                            a[x+1][n+1].td =1;
-                                        }
-                                        if(x-1>-1)
-                                        {
-                                            a[x-1][n+1].td =1;
-                                            a[x-1][n+2].td =1;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        mn[time-1] = x;
-                                        if(x+1<size)
-                                        {
-                                            a[x+1][n+1].td =1;
-                                        }
-                                        if(n+2<size)
-                                        {
-                                            a[x][n+2].td= 1;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        n += 1;
-                    }
-                    Continue = time;
-                    if(time==0)
-                    {
-                        break;
+                        
+                        min = dist[x][y].weight;
+                        minx=x;
+                        miny=y;
                     }
                 }
             }
-    }
-}
-
-//遍历一个格子邻接的所有格子
-vector<int> LookAround(int value, vector<int> mmin, int size, int color, bool **signal,Hex **a,int i, int j)
-{
-    for(int n=j-1; n<j+1; n++)
-    {
+        }
+        min = 1000;
+        //
+        dist[minx][miny].wait=false;
         for(int m=0;m<size;m++)
         {
-            if(neighbour(i, j, m, n, size))
+            for(int n=0;n<size;n++)
             {
-                if(a[m][n].color==2)
+                //cout<<"debug"<<m<<","<<n<<endl;
+                if((dist[minx][miny].weight+weight(color, minx, miny, m, n, size, a))<dist[m][n].weight)
                 {
-                    if(signal[m][n]==false)
-                    {
-                        signal[m][n]=true;
-                        if(a[m][n].td != -1)
-                        {
-                            if(mmin[0] == -1)
-                            {
-                                mmin[0] = a[m][n].td;
-                            }
-                            else
-                                if(a[m][n].td<mmin[0])
-                                {
-                                    mmin[1] = mmin[0];
-                                    mmin[0] = a[m][n].td;
-                                }
-                                else
-                                    if(a[m][n].td==mmin[0])
-                                    {
-                                        mmin[1] = mmin[0];
-                                    }
-                                    else
-                                    {
-                                        if(mmin[1]==-1||mmin[1]>a[m][n].td)
-                                        {
-                                            mmin[1] = a[m][n].td;
-                                        }
-                                    }
-                        }
-                    }
+                    dist[m][n].weight=dist[minx][miny].weight+weight(color, minx, miny, m, n, size, a);
+                }
+                /*
+                 else
+                 if(!((dist[minx][miny].weight+weight(color, minx, miny, m, n, size, a))<dist[m][n].weight))
+                 {
+                 dist[m][n].sweight=dist[minx][miny].weight+weight(color, minx, miny, m, n, size, a);
+                 }
+                 */
+            }
+        }
+    }
+    
+    //判断传送的双距离值
+    if(color==1)
+    {
+        if(side ==1)
+        {
+            for(int x=0;x<size;x++)
+            {
+                if(dist[x][0].weight<value)
+                {
+                    value = dist[x][0].weight;
                 }
                 else
-                    if((m!=i)||(n!=j))
+                    if(!(dist[x][0].weight>svalue))
                     {
-                        if(a[m][n].color==color)
-                        {
-                            mmin = LookAround(value, mmin, size, color, signal, a, m, n);
-                        }
+                        svalue = dist[x][0].weight;
                     }
             }
         }
-    }
-    return mmin;
-}
-
-//计算当前格子双距离
-void Value(int color, int size, Hex **a)
-{
-    //遍历邻居
-    for(int j=1;j<size; j++)
-    {
-        for(int i=0;i<size;i++)
+        else
         {
-            int value = -1;
-            vector<int> Miin(2,-1);
-            //申请动态数组
-            bool **signal = new bool*[size];
-            for(int i = 0; i < size; i++)
+            for(int x=0;x<size;x++)
             {
-                signal[i] = new bool [size];
-            }
-            
-            if(a[i][j].color==2)
-            {
-                Miin = LookAround(value, Miin, size, color, signal, a, i, j);
-                if(Miin[1]==-1)
+                if(dist[x][size-1].weight<value)
                 {
-                    a[i][j].td = -1;
+                    value = dist[x][size-1].weight;
                 }
                 else
-                    a[i][j].td = Miin[1]+1;
-                
+                    if(!(dist[x][size-1].weight>svalue))
+                    {
+                        svalue = dist[x][size-1].weight;
+                    }
             }
-            
-            //删除动态数组
-            for(int i=0; i<size;i++)
+        }
+    }
+    else
+    {
+        if(side==1)
+        {
+            for(int x=0;x<size;x++)
             {
-                delete[] signal[i];
+                if(dist[0][x].weight<value)
+                {
+                    value = dist[0][x].weight;
+                }
+                else
+                    if(!(dist[0][x].weight>svalue))
+                    {
+                        svalue = dist[0][x].weight;
+                    }
             }
-            delete[] signal;
+        }
+        else
+        {
+            for(int x=0;x<size;x++)
+            {
+                if(dist[size-1][x].weight<value)
+                {
+                    value = dist[size-1][x].weight;
+                }
+                else
+                    if(!(dist[size-1][x].weight>svalue))
+                    {
+                        svalue = dist[size-1][x].weight;
+                    }
+            }
         }
     }
+    
+    
+    //删除动态数组
+    for(int m=0;m<size;m++)
+    {
+        delete[] dist[m];
+    }
+    delete[] dist;
+    return  svalue+1;
 }
 
-//计算每一条边的双距离之前的坐标转换
-//0:blue,1:red;
-void ChangePosition(int size, Hex **h)
+void TwoDistance(int color, int size, Hex **a)
 {
-    //int color = 1;
-    //红边初边
-    //创建临时数组转换坐标
-    Hex **temp = new Hex*[size];
-    for(int i=0;i<size;i++)
-    {
-        temp[i] = new Hex[size];
-    }
-    first(1, size, h);
-    Value(1, size, h);
-    //红边对边
     for(int i=0;i<size;i++)
     {
         for(int j=0;j<size;j++)
         {
-            h[i][j].td_r = h[i][j].td;
-            temp[size-1-i][size-1-j].color = h[i][j].color;
+            a[i][j].td_r1 = Dijkstra(1,1, i, j, size, a);
+            a[i][j].td_r2 = Dijkstra(2,1, i, j, size, a);
+            a[i][j].td_b1 = Dijkstra(1,0, i, j, size, a);
+            a[i][j].td_b2 = Dijkstra(2,0, i, j, size, a);
         }
     }
-    first(1, size, temp);
-    Value(1, size, temp);
-    for(int i=0;i<size;i++)
-    {
-        for(int j=0;j<size;j++)
-        {
-            h[i][j].td_r += temp[size-i-1][size-1-j].td;
-        }
-    }
-    //删除临时数组
-    for(int i=0; i<size;i++)
-    {
-        delete[] temp[i];
-    }
-    delete[] temp;
-    
-    //蓝边初边
-    //创建临时数组转换坐标
-    Hex **tempb = new Hex*[size];
-    for(int i=0;i<size;i++)
-    {
-        tempb[i] = new Hex[size];
-    }
-    for(int i=0;i<size;i++)
-    {
-        for(int j=0;j<size;j++)
-        {
-            tempb[j][i].color = h[i][j].color;
-        }
-    }
-    first(0, size, tempb);
-    Value(0, size, tempb);
-    
-    //蓝边对边
-    Hex **tempbb = new Hex*[size];
-    for(int i=0;i<size;i++)
-    {
-        tempbb[i] = new Hex[size];
-    }
-    //
-    for(int i=0;i<size;i++)
-    {
-        for(int j=0;j<size;j++)
-        {
-            h[i][j].td_b = tempb[j][i].td;
-            tempbb[size-1-j][size-1-i].color = h[i][j].color;
-        }
-    }
-    first(0, size, tempbb);
-    Value(0, size, tempbb);
-    //删除tempb临时数组
-    for(int i=0; i<size;i++)
-    {
-        delete[] tempb[i];
-        for(int j=0;j<size;j++)
-        {
-            h[i][j].td_b += tempbb[size-1-j][size-1-i].td;
-        }
-    }
-    delete[] tempb;
-    //删除临时数组
-    for(int i=0; i<size;i++)
-    {
-        delete[] tempbb[i];
-    }
-    delete[] tempbb;
 }
-
 
 int main()
 {
+    int thex,they,Thex,They;
+    int color = 0;
+    int size = 5;
     string read;
-    int thex;
-    int they;
-    int board_size;
-    //读取棋盘大小
-    board_size=5;
-    //创建数组存取当前棋盘下的棋子并初始化color为2
-    int **occupy = new int*[board_size];
-    for(int i=0;i<board_size;i++)
+    int occupy[size][size];
+    for(int i=0;i<size;i++)
     {
-        occupy[i] = new int[board_size];
-    }
-    for(int i=0;i<board_size;i++)
-    {
-        for(int j=0; j<board_size;j++)
+        for(int j=0;j<size;j++)
         {
             occupy[i][j] = 2;
         }
     }
+    //occupy[1][0]=1;
+    //occupy[0][4]=0;
     
-    while(true)
+    
+    //开始下棋
+    if(color == 1)
     {
-        //读取先手后手
-        //？？？
-        //读取棋子
-        cin>>read;
-        thex = (int)read[0]-65;
-        if((int)read[2]!=0)
+        while(true)
         {
-            they = ((int)read[1]-48)*10+(int)read[2]-49;
-        }
-        else
-        {
-            they = (int)read[1]-49;
-        }
-        occupy[thex][they]=0;
-        
-        //创建当前棋盘状态
-        Hex **origin = new Hex*[board_size];
-        for(int i=0;i<board_size;i++)
-        {
-            origin[i] = new Hex[board_size];
-        }
-        //填入棋子
-        for(int i=0;i<board_size;i++)
-        {
-            for(int j=0;j<board_size;j++)
+            //创建当前棋盘状态
+            Hex **origin = new Hex*[size];
+            for(int i=0;i<size;i++)
             {
-                origin[i][j].color = occupy[i][j];
+                origin[i] = new Hex[size];
             }
-        }
-        
-        int *potential = new int[3];
-        potential[0] = 99;
-        //test
-        ChangePosition(board_size, origin);
-        for(int i=0;i<board_size;i++)
-        {
-            for(int j=0;j<board_size;j++)
+            
+            //将读到的棋子填入棋盘
+            for(int i=0;i<size;i++)
             {
-                if(origin[i][j].color == 2)
+                for(int j=0;j<size;j++)
                 {
-                    if(potential[0]>origin[i][j].td_b+origin[i][j].td_r)
+                    origin[i][j].color = occupy[i][j];
+                    //cout<<"("<<i<<","<<j<<")"<<origin[i][j].color<<","<<occupy[i][j]<<endl;
+                }
+            }
+            //创建动态数组记录最小值坐标和最小值
+            int *potential = new int[3];
+            potential[0] = 99;
+            //计算双距离
+            TwoDistance(color, size, origin);
+            for(int i=0;i<size;i++)
+            {
+                for(int j=0;j<size;j++)
+                {
+                    if(origin[i][j].color == 2)
                     {
-                        potential[0]=origin[i][j].td_b+origin[i][j].td_r;
-                        potential[1]=i;
-                        potential[2]=j;
+                        if(potential[0]>origin[i][j].td_r1+origin[i][j].td_r2)
+                        {
+                            potential[0]=origin[i][j].td_r1+origin[i][j].td_r2;
+                            potential[1]=i;
+                            potential[2]=j;
+                            //cout<<"("<<i<<","<<j<<")"<<origin[i][j].color<<","<<occupy[i][j]<<","<<potential[0]<<endl;
+                        }
                     }
                 }
             }
+            //输出棋
+            cout<<(char)(potential[1]+65)<<","<<potential[2]<<"("<<potential[1]<<","<<potential[2]<<")"<<endl;
+            thex = potential[1];
+            they = potential[2];
+            occupy[thex][they] = 1;
+            
+            //读取棋子
+            cin>>read;
+            Thex = (int)read[0]-65;
+            if((int)read[2]!=0)
+            {
+                They = ((int)read[1]-48)*10+(int)read[2]-48;
+            }
+            else
+            {
+                They = (int)read[1]-48;
+            }
+            occupy[Thex][They]=0;
+            //cout<<"("<<Thex<<","<<They<<")"<<occupy[Thex][They]<<endl;
+            
+            //删除当前棋盘状态
+            for(int i=0;i<size;i++)
+            {
+                delete[] origin[i];
+            }
+            delete[] origin;
+            delete[] potential;
         }
-        //输出字符串
-        cout<<(char)(potential[1]+65)<<","<<potential[2];
-        thex = potential[1];
-        they = potential[2];
-        occupy[thex][they] = 1;
-        delete[] potential;
-        //删除当前棋盘状态
-        for(int i=0; i<board_size;i++)
-        {
-            delete[] origin[i];
-        }
-        delete[] origin;
     }
+    else
+    {
+        while(true)
+        {
+            //读取棋子
+            cin>>read;
+            thex = (int)read[0]-65;
+            if((int)read[2]!=0)
+            {
+                they = ((int)read[1]-48)*10+(int)read[2]-48;
+            }
+            else
+            {
+                they = (int)read[1]-48;
+            }
+            occupy[thex][they]=1;
+            
+            //创建当前棋盘状态
+            Hex **origin = new Hex*[size];
+            for(int i=0;i<size;i++)
+            {
+                origin[i] = new Hex[size];
+            }
+            
+            //将读到的棋子填入棋盘
+            for(int i=0;i<size;i++)
+            {
+                for(int j=0;j<size;j++)
+                {
+                    origin[i][j].color = occupy[i][j];
+                }
+            }
+            
+            //创建动态数组记录最小值坐标和最小值
+            int *potential = new int[3];
+            potential[0] = 99;
+            //计算双距离
+            TwoDistance(color, size, origin);
+            for(int i=0;i<size;i++)
+            {
+                for(int j=0;j<size;j++)
+                {
+                    if(origin[i][j].color == 2)
+                    {
+                        if(potential[0]>origin[i][j].td_b1+origin[i][j].td_b2)
+                        {
+                            potential[0]=origin[i][j].td_b1+origin[i][j].td_b2;
+                            potential[1]=i;
+                            potential[2]=j;
+                            //cout<<"("<<i<<","<<j<<")"<<origin[i][j].color<<","<<occupy[i][j]<<","<<potential[0]<<endl;
+                        }
+                    }
+                }
+            }
+            
+            //输出棋
+            cout<<(char)(potential[1]+65)<<","<<potential[2]<<"("<<potential[1]<<","<<potential[2]<<")"<<endl;
+            thex = potential[1];
+            they = potential[2];
+            occupy[thex][they] = 0;
+            
+            //删除当前棋盘状态
+            for(int i=0;i<size;i++)
+            {
+                delete[] origin[i];
+            }
+            delete[] origin;
+            delete[] potential;
+        }
+    }
+    
+    /*
+     
+     //创建当前棋盘状态
+     Hex **origin = new Hex*[size];
+     for(int i=0;i<size;i++)
+     {
+     origin[i] = new Hex[size];
+     }
+     origin[1][2].color = 1;
+     //将读到的棋子填入棋盘
+     for(int i=0;i<size;i++)
+     {
+     for(int j=0;j<size;j++)
+     {
+     origin[i][j].color = occupy[i][j];
+     }
+     }
+     
+     TwoDistance(color, size, origin);
+     
+     for(int i=0;i<size;i++)
+     {
+     for(int j=0;j<size;j++)
+     {
+     if(origin[j][i].color==2)
+     {
+     cout<<"("<<j<<","<<i<<")"<<origin[j][i].td_r1+origin[j][i].td_r2<<endl;
+     }
+     }
+     }
+     
+     
+     
+     
+     */
+    
     return 0;
 }
