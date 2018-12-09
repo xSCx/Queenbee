@@ -272,9 +272,22 @@ void TwoDistance(int color, int size, Hex **a)
 int main()
 {
     int thex,they,Thex,They;
-    int color = 0;
-    int size = 5;
+    int color;
+    int size;
+    string p;
+    cin>>p;
+    cin>>size;
     string read;
+    if(p=="RED")
+    {
+        color=1;
+    }
+    else
+    {
+        color=0;
+    }
+    
+    
     int occupy[size][size];
     for(int i=0;i<size;i++)
     {
@@ -330,7 +343,7 @@ int main()
                 }
             }
             //输出棋
-            cout<<(char)(potential[1]+65)<<","<<potential[2]<<"("<<potential[1]<<","<<potential[2]<<")"<<endl;
+            cout<<(char)(potential[1]+65)<<potential[2]<<endl;
             thex = potential[1];
             they = potential[2];
             occupy[thex][they] = 1;
@@ -338,7 +351,7 @@ int main()
             //读取棋子
             cin>>read;
             Thex = (int)read[0]-65;
-            if((int)read[2]!=0)
+            if(read.size()==3)
             {
                 They = ((int)read[1]-48)*10+(int)read[2]-48;
             }
@@ -365,7 +378,7 @@ int main()
             //读取棋子
             cin>>read;
             thex = (int)read[0]-65;
-            if((int)read[2]!=0)
+            if(read.size()==3)
             {
                 they = ((int)read[1]-48)*10+(int)read[2]-48;
             }
@@ -414,7 +427,7 @@ int main()
             }
             
             //输出棋
-            cout<<(char)(potential[1]+65)<<","<<potential[2]<<"("<<potential[1]<<","<<potential[2]<<")"<<endl;
+            cout<<(char)(potential[1]+65)<<potential[2]<<endl;
             thex = potential[1];
             they = potential[2];
             occupy[thex][they] = 0;
