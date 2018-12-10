@@ -10,12 +10,6 @@
 #include <cmath>
 #include <vector>
 #include <string>
-using namespace std;
-
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <cstring>
 using namespace std;
@@ -36,8 +30,6 @@ struct Dist
     //int sweight = 999;
     bool wait = 1;
 };
-
-
 
 //判断相邻,true相邻，false不相邻
 bool neighbour(int a, int b, int c, int d,int size)
@@ -269,24 +261,32 @@ void TwoDistance(int color, int size, Hex **a)
     }
 }
 
-int main()
+int main(int argc, const char* argv[])
 {
     int thex,they,Thex,They;
     int color;
     int size;
-    string p;
-    cin>>p;
-    cin>>size;
+    string s;
     string read;
-    if(p=="RED")
+    s = argv[2];
+    if(argc > 4)
     {
-        color=1;
+        size = atoi(argv[4]);
+        if(s=="RED")
+        {
+            color=1;
+        }
+        else
+        {
+            color=0;
+        }
     }
     else
     {
-        color=0;
+        return 0;
     }
     
+    //cout<<s<<size<<endl;
     
     int occupy[size][size];
     for(int i=0;i<size;i++)
@@ -480,3 +480,4 @@ int main()
     
     return 0;
 }
+
