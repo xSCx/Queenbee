@@ -2,6 +2,9 @@
 A Hex AI ： inspired by "Are bees better than fruitflies?"
 
 using 
-two-distance;
+
+Two-distance;
+
 Minmax;
-alpha-beta pruning;
+
+Alpha-beta pruning;
