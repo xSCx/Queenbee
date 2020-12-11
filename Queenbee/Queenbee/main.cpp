@@ -442,42 +442,6 @@ int main(int argc, const char* argv[])
         }
     }
     
-    /*
-     
-     //创建当前棋盘状态
-     Hex **origin = new Hex*[size];
-     for(int i=0;i<size;i++)
-     {
-     origin[i] = new Hex[size];
-     }
-     origin[1][2].color = 1;
-     //将读到的棋子填入棋盘
-     for(int i=0;i<size;i++)
-     {
-     for(int j=0;j<size;j++)
-     {
-     origin[i][j].color = occupy[i][j];
-     }
-     }
-     
-     TwoDistance(color, size, origin);
-     
-     for(int i=0;i<size;i++)
-     {
-     for(int j=0;j<size;j++)
-     {
-     if(origin[j][i].color==2)
-     {
-     cout<<"("<<j<<","<<i<<")"<<origin[j][i].td_r1+origin[j][i].td_r2<<endl;
-     }
-     }
-     }
-     
-     
-     
-     
-     */
-    
     return 0;
 }
 
